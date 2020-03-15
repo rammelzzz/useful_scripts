@@ -1,0 +1,62 @@
+#!/usr/local/bin/bash
+# author: rammel zheng
+# date  :2020-03-15 00:00:03
+
+## 命令行翻译程序
+## -l 选项将参数视为长句子 例：translate -l I am a translator  输出：我是一个翻译
+## 不加任何选项循环输出全部单词释义 例：translate I am a translator 输出：我 是 一个 翻译
+
+function translate_all_single_words
+{
+    for src in $@
+    do 
+        do_translate ${src}
+    done
+}
+
+function translate_sentence
+{
+    sentence=$@
+    do_translate "${sentence}"
+}
+
+function do_translate
+{
+    result=$(exec_youdao_translate_api "$1")
+    errorCode=`echo ${result} | jq .errorCode`
+
+    if [[ $errorCode == "0" ]]; then
+        echo ${result} | jq .translateResult | jq .[0] | jq .[0] | jq .tgt | sed 's/\"//g'
+    else
+        echo 'cannot translate '${1}''
+    fi
+}
+
+function exec_youdao_translate_api
+{
+    fetch_url="http://fanyi.youdao.com/translate?doctype=json&type=AUTO&i=${1}"
+    encoded_url=`encode_url "${fetch_url}"`
+    json_result=`curl -X GET -s ${encoded_url}`
+    echo $json_result
+}
+
+function encode_url
+{
+    echo $1 | sed 's/ /%20/g'
+}
+
+comm=`echo $0 | awk -F '/' '{print $NF}'`
+
+if [ $# -eq 0 ]; then
+    echo "usage: ${comm} strings"
+fi
+
+case $1 in 
+    "-l")
+        shift 
+        translate_sentence $@
+        ;;
+    *)
+        translate_all_single_words $@
+        ;;
+esac

@@ -1,0 +1,18 @@
+#!/usr/local/bin/bash
+# author: rammel zheng
+# date  :2019-08-19 09:41:33
+
+## 快速生成shell脚本，自动生成头部
+
+FILENAME=$1
+
+#将此处替换为自己的名字
+AUTHOR="rammel zheng"
+
+if [ -z $FILENAME ]; then
+    echo -e "\033[31musage: tsh filename\033[0m"
+    exit
+fi
+
+touch $FILENAME
+printf "#!/usr/local/bin/bash\n# author: ${AUTHOR}\n# date  :`date "+%Y-%m-%d %H:%M:%S"`" >> $FILENAME
