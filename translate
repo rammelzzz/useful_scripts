@@ -8,44 +8,44 @@
 
 function translate_all_single_words
 {
-    for src in $@
+    for src in "$@"
     do 
-        do_translate ${src}
+        do_translate "${src}"
     done
 }
 
 function translate_sentence
 {
-    sentence=$@
+    sentence=${*}
     do_translate "${sentence}"
 }
 
 function do_translate
 {
     result=$(exec_youdao_translate_api "$1")
-    errorCode=`echo ${result} | jq .errorCode`
+    errorCode=$(echo "${result}" | jq .errorCode)
 
     if [[ $errorCode == "0" ]]; then
-        echo ${result} | jq .translateResult | jq .[0] | jq .[0] | jq .tgt | sed 's/\"//g'
+        echo "${result}" | jq .translateResult | jq .[0] | jq .[0] | jq .tgt | sed 's/\"//g'
     else
-        echo 'cannot translate '${1}''
+        echo 'cannot translate '"${1}"''
     fi
 }
 
 function exec_youdao_translate_api
 {
     fetch_url="http://fanyi.youdao.com/translate?doctype=json&type=AUTO&i=${1}"
-    encoded_url=`encode_url "${fetch_url}"`
-    json_result=`curl -X GET -s ${encoded_url}`
-    echo $json_result
+    encoded_url=$(encode_url "${fetch_url}")
+    json_result=$(curl -X GET -s "${encoded_url}")
+    echo "$json_result"
 }
 
 function encode_url
 {
-    echo $1 | sed 's/ /%20/g'
+    echo "$1" | sed 's/ /%20/g'
 }
 
-comm=`echo $0 | awk -F '/' '{print $NF}'`
+comm=$(echo "$0" | awk -F '/' '{print $NF}')
 
 if [ $# -eq 0 ]; then
     echo "usage: ${comm} strings"
@@ -54,9 +54,9 @@ fi
 case $1 in 
     "-l")
         shift 
-        translate_sentence $@
+        translate_sentence "$@"
         ;;
     *)
-        translate_all_single_words $@
+        translate_all_single_words "$@"
         ;;
 esac
